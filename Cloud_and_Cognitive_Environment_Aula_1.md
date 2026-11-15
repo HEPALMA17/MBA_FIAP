@@ -24,11 +24,25 @@ Para cada serviço, identifique-se como IaaS, PaaS, SaaS ou FaaS. Justifique em 
 
 Leia cada cenário e escolha o R de migração mais adequado (Rehost, Replatform, Refactor, Repurchase, Retire, Retain). Justifique.
 
-* **Cenário A — Rehost (*Lift and Shift*):** Como o sistema é antigo (2008), não possui documentação, tem baixa disponibilidade de conhecimento técnico interno e a prioridade é migrar rapidamente para ganhar elasticidade, mover a máquina virtual diretamente para a nuvem (ex.: Amazon EC2) sem alterar o código é a abordagem mais segura e ágil.
-* **Cenário B — Retire (Desativar):** O sistema possui baixíssima utilização (menos de 5 usuários ativos por mês) e dados raramente consultados; desativá-lo (arquivando os dados históricos caso haja exigência legal) elimina custos desnecessários de manutenção e infraestrutura.
-* **Cenário C — Refactor / Re-architect (Refatorar):** A empresa decidiu reescrever a aplicação monolítica para uma arquitetura nativa em nuvem baseada em microsserviços, Kubernetes e eventos, visando escalabilidade e agilidade de entrega.
-* **Cenário D — Repurchase (Recomprar):** Como um produto SaaS de mercado já atende 90% das necessidades por um custo menor do que manter um legado interno de 15 anos, substituir a solução própria por uma assinatura comercial é a escolha mais eficiente.
-* **Cenário E — Retain (Manter):** Devido a restrições regulatórias e de conformidade impostas pelo Banco Central, os dados precisam permanecer em ambiente *on-premise*, mantendo a carga de trabalho localmente enquanto outras partes do ecossistema podem ser integradas via arquitetura híbrida.
+* **Cenário A:** Empresa de logística com sistema de rastreamento de frotas em servidor físico próprio. Código de 2008, sem documentação, só uma pessoa sabe mexer. Quer migrar rápido para ganhar elasticidade.
+  * **Resposta:** Rehost
+  * **Justificativa:** Como o sistema é antigo (2008), não possui documentação, tem baixa disponibilidade de conhecimento técnico interno e a prioridade é migrar rapidamente para ganhar elasticidade, mover a máquina virtual diretamente para a nuvem (ex.: Amazon EC2) sem alterar o código é a abordagem mais segura e ágil.
+  
+* **Cenário B:** Banco regional usa ERP local de RH. Análise mostra: menos de 5 usuários ativos por mês, dados raramente consultados.
+  * **Resposta:** Retire
+  * **Justificativa:** O sistema possui baixíssima utilização (menos de 5 usuários ativos por mês) e dados raramente consultados; desativá-lo (arquivando os dados históricos caso haja exigência legal) elimina custos desnecessários de manutenção e infraestrutura.
+  
+* **Cenário C:** Fintech tem API de pagamentos monolítica. Decida aproveitar a migração para refatorar em microserviços com K8s e orientado a eventos.
+  * **Resposta:** Refactor
+  * **Justificativa:** A empresa decidiu reescrever a aplicação monolítica para uma arquitetura nativa em nuvem baseada em microsserviços, Kubernetes e eventos, visando escalabilidade e agilidade de entrega.
+  
+* **Cenário D — Repurchase:** Varejo usa CRM desenvolvido internamente há 15 anos. SaaS de mercado atende 90% das necessidades por menor custo.
+  * **Resposta:** Refactor
+  * **Justificativa:** Como um produto SaaS de mercado já atende 90% das necessidades por um custo menor do que manter um legado interno de 15 anos, substituir a solução própria por uma assinatura comercial é a escolha mais eficiente.
+  
+* **Cenário E:** Instituição financeira tem mainframe com dados de clientes que precisam ficar on-premise por exigência do Banco Central.
+  * **Resposta:** Retain
+  * **Justificativa:** Devido a restrições regulatórias e de conformidade impostas pelo Banco Central, os dados precisam permanecer em ambiente *on-premise*, mantendo a carga de trabalho localmente enquanto outras partes do ecossistema podem ser integradas via arquitetura híbrida.
 
 ---
 
@@ -53,3 +67,114 @@ a) Quantas horas de inatividade por ano? b) Se processa R$ 50.000/hora em vendas
     $$8.760 \times \left(1 - \frac{\text{SLA}}{100}\right) < 1 \implies 1 - \frac{\text{SLA}}{100} < \frac{1}{8.760} \approx 0,00011415$$
     $$\text{SLA} > (1 - 0,00011415) \times 100 = \mathbf{99,9886\%}$$
   * **Conclusão:** Seria necessário um SLA mínimo de **99,99%** ("quatro noves"), o que limitaria a inatividade anual a **0,876 horas** (cerca de 52 minutos e 33 segundos), gerando um impacto máximo de **R$ 43.800,00/ano**.
+ 
+---
+
+### Exercício 1.4 — IAM na prática
+
+Você é o responsável pela segurança da Quantum Commerce. Para cada perfil abaixo, escolha a política gerenciada da AWS (ou descreva a política customizada) mais adequada e justificada:
+
+| Perfil | Política IAM mais adequada | Justificativa |
+| :--- | :--- | :--- |
+| Agente de IA que LÊ produtos do S3 para responder ao cliente | Política customizada com `s3:GetObject` e `s3:ListBucket` restrita ao ARN do bucket/prefixo específico | Aplica o princípio do menor privilégio, evitando conceder `AmazonS3ReadOnlyAccess` que exporia todos os outros buckets da conta. |
+| Engenheiro de dados que CARREGA novos catálogos no S3 | Política customizada com `s3:PutObject` restrita ao prefixo `catalogo/` | Permite apenas o envio de novos arquivos no diretório específico de catálogos, impedindo alterações ou exclusões indevidas em outros dados. |
+| Time de FinOps que precisa VER custos sem alterar recursos | `AWSBillingReadOnlyAccess` (política gerenciada pela AWS) | Garante acesso de leitura às informações de faturamento e Cost Explorer para análise financeira, sem permissão para criar, modificar ou excluir recursos. |
+| Auditor externo que precisa LER configurações de toda a conta | `SecurityAudit` ou `ViewOnlyAccess` via IAM Role assumida | Permite inspecionar configurações e metadados de segurança de toda a conta sem alterar recursos, usando credenciais temporárias (sem usuário IAM permanente). |
+| Sistema de CI/CD que provisiona infraestrutura via Terraform | IAM Role dedicada assumida via OIDC (ex.: GitHub Actions) com política customizada restrita aos serviços do projeto | Elimina o uso de chaves de acesso fixas (`Access Keys`) e limita o provisionamento apenas aos recursos necessários, evitando conceder `AdministratorAccess`. |
+
+
+---
+
+## 🟡 Nível 2 — Intermediário: Arquitetura em Nuvem
+
+### Exercício 2.1 — Arquitetura de alto nível: Quantum Commerce
+
+**Contexto:** A Quantum Commerce é um gigante do e-commerce com 12 países, 5M de SKUs, e quer transformar a experiência de compra com IA conversacional.
+
+#### 1. Camadas da arquitetura
+
+A arquitetura proposta é dividida em **6 camadas principais** para garantir escala global, baixa latência e resiliência entre os 12 países:
+
+* **Camada de Borda e Entrega (Edge / Frontend):** Responsável por hospedar a interface web/mobile, distribuir conteúdo estático (imagens e vídeos dos 5M de SKUs) com baixa latência global via CDN e proteger a borda contra ataques DDoS e bots (WAF).
+* **Camada de Entrada e Roteamento (API Gateway):** Ponto único de entrada que gerencia autenticação/autorização, *rate limiting*, roteamento geográfico e orquestração das requisições entre o frontend e os microsserviços internos.
+* **Camada de Aplicação e Negócio (Backend / Microsserviços):** Contém os serviços desacoplados de catálogo, carrinho, checkout, pedidos e o orquestrador do agente de IA conversacional, comunicando-se de forma assíncrona via filas e eventos.
+* **Camada de IA Generativa e Busca Semântica (AI / ML):** Gerencia os modelos fundacionais (LLMs) para atendimento conversacional, geração de embeddings dos produtos e busca vetorial (RAG) para recomendações personalizadas em tempo real sobre os 5 milhões de SKUs.
+* **Camada de Persistência de Dados (Dados):** Armazena dados transacionais críticos (pedidos e pagamentos em banco relacional), sessões de chat e carrinhos em alta velocidade (NoSQL), índices vetoriais do catálogo e mídias em object storage.
+* **Camada de Observabilidade e Governança:** Coleta logs distribuídos, métricas de infraestrutura/negócio, traces das chamadas de IA e alertas automatizados, além de gerenciar políticas de acesso (IAM) e segredos.
+
+---
+
+#### 2. Provedor principal escolhido e justificativa
+
+* **Provedor escolhido:** **AWS (Amazon Web Services)**
+* **Justificativa:**
+  * **Capilaridade Global:** Possui regiões e *Edge Locations* (CloudFront) distribuídas estrategicamente na América do Norte, Europa, América Latina e Ásia, atendendo aos 12 países com baixa latência e conformidade de residência de dados (como LGPD e GDPR).
+  * **Maturidade em IA Generativa (Amazon Bedrock):** Permite consumir múltiplos modelos fundacionais via API gerenciada com segurança empresarial, sem que os dados proprietários da Quantum Commerce sejam usados para treinar modelos públicos.
+  * **Escala Comprovada em E-commerce:** Serviços nativos como DynamoDB (latência de milissegundos em qualquer escala), EKS/ECS e OpenSearch Serverless suportam picos extremos de tráfego (como Black Friday) sobre 5M de SKUs sem gargalos operacionais.
+
+---
+
+#### 3. Serviços por categoria
+
+| Categoria | AWS | Alternativa Azure | Alternativa GCP |
+| :--- | :--- | :--- | :--- |
+| Computação (backend) | Amazon EKS / AWS Fargate | Azure Kubernetes Service (AKS) / Azure Container Apps | Google Kubernetes Engine (GKE) / Cloud Run |
+| Armazenamento (catálogo, imagens) | Amazon S3 | Azure Blob Storage | Google Cloud Storage (GCS) |
+| Banco relacional | Amazon Aurora / Amazon RDS (PostgreSQL) | Azure Database for PostgreSQL / Azure SQL | Cloud SQL / AlloyDB for PostgreSQL |
+| Banco NoSQL | Amazon DynamoDB | Azure Cosmos DB | Cloud Firestore / Cloud Bigtable |
+| Banco de dados vetorial | Amazon OpenSearch Serverless (Vector Engine) / pgvector no Aurora | Azure AI Search / Cosmos DB (Vector) | Vertex AI Vector Search / AlloyDB (pgvector) |
+| Serviços de IA cognitivos | Amazon Bedrock | Azure OpenAI Service / Azure AI Foundry | Vertex AI (Gemini) |
+| CDN | Amazon CloudFront | Azure Front Door / Azure CDN | Cloud CDN |
+| Mensageria/Filas | Amazon SQS / Amazon EventBridge | Azure Service Bus / Azure Event Grid | Cloud Pub/Sub |
+| Observabilidade (logs/métricas) | Amazon CloudWatch / AWS X-Ray | Azure Monitor / Application Insights | Cloud Logging / Cloud Monitoring / Cloud Trace |
+
+---
+
+#### 4. Diagrama de Arquitetura (Mermaid)
+
+> Abaixo está o diagrama em código **Mermaid** (renderizado automaticamente pelo GitHub) e que também pode ser exportado ou recriado no **Excalidraw** / **draw.io** para anexar a imagem conforme solicitado na entrega.
+
+```mermaid
+flowchart TD
+    User([Clientes Globais - 12 Países]) --> Edge[Amazon CloudFront + AWS WAF<br/>CDN & Segurança de Borda]
+    Edge --> Frontend[Frontend Web / Mobile]
+    Frontend --> APIGW[Amazon API Gateway<br/>Roteamento & Auth]
+
+    subgraph Backend [Camada de Aplicação - Amazon EKS / Fargate]
+        Catalogo[Microsserviço de Catálogo]
+        Pedidos[Microsserviço de Pedidos & Checkout]
+        OrquestradorIA[Orquestrador Agente Conversacional]
+    end
+
+    APIGW --> Catalogo
+    APIGW --> Pedidos
+    APIGW --> OrquestradorIA
+
+    subgraph AI [Camada de IA & Busca Semântica]
+        Bedrock[Amazon Bedrock<br/>LLMs & Embeddings]
+        VectorDB[(Amazon OpenSearch Serverless<br/>Banco Vetorial - 5M SKUs)]
+    end
+
+    OrquestradorIA <--> Bedrock
+    OrquestradorIA <--> VectorDB
+
+    subgraph Mensageria [Comunicação Assíncrona]
+        SQS[Amazon SQS / EventBridge]
+    end
+
+    Pedidos --> SQS
+    SQS --> Catalogo
+
+    subgraph Dados [Camada de Persistência]
+        S3[(Amazon S3<br/>Imagens & Mídias)]
+        RDS[(Amazon Aurora PostgreSQL<br/>Pedidos & Transações)]
+        Dynamo[(Amazon DynamoDB<br/>Carrinho & Histórico de Chat)]
+    end
+
+    Catalogo --> S3
+    Pedidos --> RDS
+    OrquestradorIA --> Dynamo
+
+    Obs[Amazon CloudWatch & X-Ray<br/>Logs, Métricas e Tracing] -.-> Backend
+    Obs -.-> AI
+    Obs -.-> Dados
