@@ -178,8 +178,7 @@ flowchart TD
     Obs[Amazon CloudWatch & X-Ray<br/>Logs, Métricas e Tracing] -.-> Backend
     Obs -.-> AI
     Obs -.-> Dados
-
-```` ``` ````
+```
 
 ---
 
@@ -224,4 +223,4 @@ Você precisa recomendar infraestrutura para um projeto de Engenharia de IA. Use
 
 * **AWS:** https://calculator.aws
 * **Azure:** https://azure.microsoft.com/pricing/calculator
-* **GCP:** https://cloud.google.com/products/calculator[cite: 10]
+* **GCP:** https://cloud.google.com/products/calculator
