@@ -178,3 +178,50 @@ flowchart TD
     Obs[Amazon CloudWatch & X-Ray<br/>Logs, Métricas e Tracing] -.-> Backend
     Obs -.-> AI
     Obs -.-> Dados
+
+
+
+---
+
+### Exercício 2.2 — Comparativo de custos: 3 fornecedores
+
+Você precisa recomendar infraestrutura para um projeto de Engenharia de IA. Use as calculadoras para comparar:
+
+* 2 VMs com 2 vCPUs e 8 GB de RAM (Linux, 24/7)
+* 500 GB de armazenamento de objetos
+* 1 banco gerenciado com 2 vCPUs / 8 GB RAM / 100 GB
+* 10 milhões de requisições/mês para função serverless
+
+> **Premissas da simulação:** Região `us-east-1` / `East US` / `us-central1`, modelo *On-Demand* (730 h/mês), banco relacional PostgreSQL (Single-AZ, 100 GB SSD) e função serverless configurada com 512 MB de memória e duração média de 200 ms por execução (incluindo o *Free Tier* mensal padrão).
+
+| Item | AWS | Azure | GCP | Notas |
+| :--- | :--- | :--- | :--- | :--- |
+| 2 × VM (2 vCPUs/8 GB) | US$ 121,47 | US$ 121,18 | US$ 97,85 | **Tipo:** AWS `t3.large` / Azure `Standard_B2ms` / GCP `e2-standard-2` |
+| 500 GB de armazenamento | US$ 11,50 | US$ 10,40 | US$ 10,00 | **Tipo:** S3 Standard / Azure Blob Hot (LRS) / Cloud Storage Standard |
+| Banco relacional gerenciado | US$ 107,07 | US$ 107,50 | US$ 92,35 | **Tipo:** RDS `db.t3.large` / Azure PostgreSQL Flexible `B2ms` / Cloud SQL `db-custom-2-8192` |
+| 10 milhões de requisições serverless | US$ 16,67 | US$ 16,00 | US$ 18,40 | **Tipo:** AWS Lambda / Azure Functions / Cloud Run Functions (512 MB, 200 ms) |
+| **Total mensal** | **US$ 256,71** | **US$ 255,08** | **US$ 218,60** | Valores estimados em dólar (USD) sob demanda (*On-Demand*) |
+| **Total anual** | **US$ 3.080,52** | **US$ 3.060,96** | **US$ 2.623,20** | Projeção linear de 12 meses sem reservas |
+
+#### Análise
+
+* **a) Qual provedor ficou mais barato? A diferença é significativa?**
+  * O **GCP (Google Cloud Platform)** apresentou o menor custo mensal (**US$ 218,60/mês**), gerando uma economia aproximada de **14,3% a 14,8%** (cerca de **US$ 36 a US$ 38 por mês**, ou **~US$ 440 a US$ 457 por ano**) em comparação com a AWS e o Azure, que ficaram praticamente empatados na faixa de **US$ 255 a US$ 257/mês**. Para cargas contínuas de menor porte, a diferença anual é relevante no orçamento, embora em grandes arquiteturas corporativas contratos corporativos e créditos de nuvem costumem equilibrar esses valores.
+
+* **b) Aplicando Instâncias Reservadas de 1 ano no mais caro, o resultado muda?**
+  * **Sim, o resultado muda e o provedor mais caro passa a ser o mais barato.** Aplicando um plano de compromisso de 1 ano (*Savings Plans / Reserved Instances* sem pagamento adiantado) na **AWS** (que teve o maior valor *On-Demand* de US$ 256,71), obtém-se um desconto médio de **~35% a 40%** na computação (EC2) e no banco de dados (RDS):
+    * **2 × EC2 (`t3.large` - 1 ano reservado):** cai de US$ 121,47 para **~US$ 76,50/mês**
+    * **RDS (`db.t3.large` - 1 ano reservado):** cai de US$ 107,07 para **~US$ 69,60/mês**
+    * **Novo total mensal na AWS:** **~US$ 174,27/mês** (**US$ 2.091,24/ano**), superando o preço *On-Demand* do GCP (US$ 218,60/mês). *(Nota: se o GCP também aplicar Committed Use Discounts de 1 ano, ele volta a disputar a liderança na faixa de ~US$ 155–165/mês).*
+
+* **c) Além do preço, que outros fatores você consideraria para um projeto de IA?**
+  * **Ecossistema de Modelos Fundacionais e APIs Gerenciadas:** Disponibilidade e variedade de LLMs de ponta sem precisar gerenciar GPUs (ex.: *Amazon Bedrock* com Claude/Llama, *Azure OpenAI Service* com modelos GPT ou *GCP Vertex AI* com Gemini).
+  * **Disponibilidade e Custo de GPUs/TPUs:** Facilidade para obter cotas (*quotas*) de instâncias aceleradas (NVIDIA L4, A100, H100) caso o projeto exija *fine-tuning* ou inferência de modelos próprios.
+  * **Integração com Bancos Vetoriais e Pipelines de Dados:** Suporte nativo a busca vetorial (RAG), governança de dados, segurança empresarial (privacidade de prompts, isolamento de rede via VPC/PrivateLink) e conformidade regulatória (LGPD/GDPR).
+  * **Maturidade da Equipe e *Vendor Lock-in*:** Conhecimento técnico atual do time de engenharia e portabilidade da arquitetura usando ferramentas abertas (Terraform, Kubernetes, Docker, LangChain).
+
+#### Calculadoras utilizadas
+
+* **AWS:** https://calculator.aws
+* **Azure:** https://azure.microsoft.com/pricing/calculator
+* **GCP:** https://cloud.google.com/products/calculator[cite: 10]
