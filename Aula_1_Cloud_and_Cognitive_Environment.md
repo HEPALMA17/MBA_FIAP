@@ -62,10 +62,10 @@ a) Quantas horas de inatividade por ano? b) Se processa R$ 50.000/hora em vendas
 
 * **c) SLA mínimo para reduzir o impacto para menos de R$ 50.000/ano:**
   * Primeiro, calcula-se o limite máximo de horas de indisponibilidade permitido:
-    $$\text{Downtime máximo} < \frac{\text{R\$ } 50.000}{\text{R\$ } 50.000/\text{hora}} \implies \mathbf{< 1\text{ hora/ano}}$$
+    `Downtime máximo < R$ 50.000 / (R$ 50.000/hora)` → **< 1 hora/ano**
   * Aplicando na fórmula de SLA anual:
-    $$8.760 \times \left(1 - \frac{\text{SLA}}{100}\right) < 1 \implies 1 - \frac{\text{SLA}}{100} < \frac{1}{8.760} \approx 0,00011415$$
-    $$\text{SLA} > (1 - 0,00011415) \times 100 = \mathbf{99,9886\%}$$
+    `8.760 × (1 - SLA / 100) < 1` → `1 - SLA / 100 < 1 / 8.760` (`≈ 0,00011415`)
+    `SLA > (1 - 0,00011415) × 100` = **99,9886%**
   * **Conclusão:** Seria necessário um SLA mínimo de **99,99%** ("quatro noves"), o que limitaria a inatividade anual a **0,876 horas** (cerca de 52 minutos e 33 segundos), gerando um impacto máximo de **R$ 43.800,00/ano**.
  
 ---
