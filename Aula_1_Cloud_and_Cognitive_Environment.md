@@ -58,7 +58,7 @@ a) Quantas horas de inatividade por ano? b) Se processa R$ 50.000/hora em vendas
   $$\text{Downtime anual} = 8.760 \times \left(1 - \frac{99,9}{100}\right) = 8.760 \times 0,001 = \mathbf{8,76\text{ horas/ano}}\text{ (aproximadamente 8h 45min 36s)}$$
 
 * **b) Impacto financeiro máximo por ano:**
-  $$\text{Impacto financeiro} = 8,76\text{ horas} \times \text{R\$ } 50.000/\text{hora} = \mathbf{\text{R\$ } 438.000,00/\text{ano}}$$
+  * `Impacto financeiro = 8,76 horas × R$ 50.000/hora` = **R$ 438.000,00/ano**
 
 * **c) SLA mínimo para reduzir o impacto para menos de R$ 50.000/ano:**
   * Primeiro, calcula-se o limite máximo de horas de indisponibilidade permitido:
